@@ -1,0 +1,41 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta1
+kind: GitRepository
+metadata:
+  name: demo-stack
+  namespace: flux-system
+spec:
+  interval: 1m
+  url: https://github.com/slayerjain/demo-stack
+  ref:
+    tag: "0.1.8"
+  # ignore: |
+  #   # exclude all
+  #   /*
+  #   # include charts directory
+  #   !/deployment/
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: demo-stack
+  namespace: flux-system
+spec:
+  interval: 1m
+  targetNamespace: test
+  releaseName: demo-stack
+  chart:
+    spec:
+      chart: './stack-chart'
+      sourceRef:
+        kind: GitRepository
+        name: demo-stack
+        namespace: flux-system
+      interval: 1m
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test
+  annotations:
+    linkerd.io/inject: enabled
